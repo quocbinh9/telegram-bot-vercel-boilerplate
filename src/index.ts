@@ -1,7 +1,7 @@
 import * as express from 'express'
 import createDebug from 'debug';
 import * as TelegramBot from 'node-telegram-bot-api'
-import moment = require('moment');
+import * as moment from 'moment';
 import * as bodyParser from 'body-parser'
 
 const app = express()
@@ -259,6 +259,11 @@ const bot = new TelegramBot(process.env.BOT_TOKEN || "", {
   polling: environment != 'production'
 })
 
+if (environment == 'production') {
+  bot.setWebHook(baseUrl + "/webhook")
+    .then(res => debug(res))
+}
+
 bot.setMyCommands([
   {
     command: "start",
@@ -483,14 +488,6 @@ app.use(bodyParser.json());
 
 app.get('/', (req: express.Request, res: express.Response) => {
   res.status(200).json('Listening to bot events...');
-})
-
-app.get('/setup', (req: express.Request, res: express.Response) => {
-  if (environment == 'production') {
-    bot.setWebHook(baseUrl + "/webhook")
-      .then(res => debug(res))
-  }
-  res.status(200).json('Setup webhook success...');
 })
 
 app.post('/webhook', (req: express.Request, res: express.Response) => {
